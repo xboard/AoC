@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-    Solves problems for Day 2 of AoC 2020.
+    Solves day 2 tasks of AoC 2020.
     https://adventofcode.com/2020/day/2
 """
 
