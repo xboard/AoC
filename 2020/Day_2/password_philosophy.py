@@ -12,7 +12,7 @@ from collections import Counter
 INPUT_FILE_PATH = Path(".") / "input.txt"
 
 
-@dataclass(repr=True)
+@dataclass(repr=True, frozen=True)
 class PolicyTask1:
     """
     Represents a password policy for Task 1.
@@ -32,7 +32,7 @@ class PolicyTask1:
     letter: str
 
 
-@dataclass(repr=True)
+@dataclass(repr=True, frozen=True)
 class PolicyTask2:
     """
     Represents a password policy for Task 2.
