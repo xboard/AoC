@@ -39,6 +39,7 @@ jobs:
               black --check .
 
       - name: Install and lint with mypy
+        shell: bash
         run: |
               pip install --upgrade mypy
               mypy **/*.py
