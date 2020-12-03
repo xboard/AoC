@@ -39,9 +39,11 @@ jobs:
               black --check .
 
       - name: Install and lint with mypy
+        shell: bash
         run: |
               pip install --upgrade mypy
-              mypy .
+              shopt -s globstar nullglob dotglob
+              mypy **/*.py
 
       - name: Install and lint with pylint
         run: |
