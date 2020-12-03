@@ -85,9 +85,9 @@ def parse_passwords(
         while line := file.readline():
             section = line.split(":")
             field = section[0].split(" ")
-            lh = field[0].strip().split("-")
+            lo_hi = field[0].strip().split("-")
             policy = policy_type(
-                int(lh[0].strip()), int(lh[1].strip()), field[1].strip()
+                int(lo_hi[0].strip()), int(lo_hi[1].strip()), field[1].strip()
             )
             policies.append((policy, Password(section[1].strip())))
     return policies
