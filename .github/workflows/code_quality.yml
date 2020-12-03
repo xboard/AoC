@@ -43,14 +43,21 @@ jobs:
         run: |
               pip install --upgrade mypy
               shopt -s globstar nullglob dotglob
+              echo "Running mypy..."
               mypy **/*.py
 
       - name: Install and lint with pylint
+        shell: bash
         run: |
               pip install --upgrade pylint
-              pylint .
+              shopt -s globstar nullglob dotglob
+              echo "Running pylint..."
+              pylint **/*.py
       
       - name: Install and lint with pycodesytle
+        shell: bash
         run: |
               pip install --upgrade pycodestyle
-              pycodestyle .
+              shopt -s globstar nullglob dotglob
+              echo "Running pycodestyle..."
+              pycodestyle **/*.py
