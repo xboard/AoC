@@ -36,19 +36,19 @@ jobs:
       - name: Install and lint with black
         run: |
               pip install --upgrade black
-              black --check **/*.py
+              black --check .
 
       - name: Install and lint with mypy
         run: |
               pip install --upgrade mypy
-              mypy **/*.py
+              mypy .
 
       - name: Install and lint with pylint
         run: |
               pip install --upgrade pylint
-              pylint **/*.py
+              pylint .
       
       - name: Install and lint with pycodesytle
         run: |
               pip install --upgrade pycodestyle
-              pycodestyle **/*.py
+              pycodestyle .
