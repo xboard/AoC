@@ -40,9 +40,9 @@ def answer_task(input_path: Path, slope: Tuple[int, int]) -> int:
     trees = 0
     slope_right, slope_down = slope
     with gzip.open(input_path, "rt", encoding="ascii") as file:
-        line = file.readline().strip()
-        assert line[0] == "."
-        columns = len(line)
+        fline = file.readline().strip()
+        assert fline[0] == "."
+        columns = len(fline)
         current_column = 0
         while line := go_down(file, slope_down):
             line = line.strip()
