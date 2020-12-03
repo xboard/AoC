@@ -41,7 +41,7 @@ jobs:
       - name: Install and lint with mypy
         run: |
               pip install --upgrade mypy
-              mypy .
+              mypy **/*.py
 
       - name: Install and lint with pylint
         run: |
