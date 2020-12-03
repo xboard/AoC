@@ -42,6 +42,7 @@ jobs:
         shell: bash
         run: |
               pip install --upgrade mypy
+              shopt -s globstar nullglob dotglob
               mypy **/*.py
 
       - name: Install and lint with pylint
