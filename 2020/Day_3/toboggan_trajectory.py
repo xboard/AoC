@@ -39,16 +39,16 @@ def answer_task(input_path: Path, slope: Tuple[int, int]) -> int:
 
     trees = 0
     slope_right, slope_down = slope
-    with gzip.open(input_path, 'rt', encoding='ascii') as file:
+    with gzip.open(input_path, "rt", encoding="ascii") as file:
         line = file.readline().strip()
-        assert line[0] == '.'
+        assert line[0] == "."
         columns = len(line)
         current_column = 0
         while line := go_down(file, slope_down):
             line = line.strip()
             current_column += slope_right
             current_column %= columns
-            trees += line[current_column] == '#'
+            trees += line[current_column] == "#"
     return trees
 
 
@@ -86,9 +86,13 @@ def answer_task2(input_path: Path) -> int:
         multiplication of number of trees.
     """
 
-    return reduce(lambda a, b: a*b,
-                  [answer_task(input_path, slope)
-                   for slope in [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)]])
+    return reduce(
+        lambda a, b: a * b,
+        [
+            answer_task(input_path, slope)
+            for slope in [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)]
+        ],
+    )
 
 
 def main() -> None:
@@ -96,10 +100,10 @@ def main() -> None:
 
     trees = answer_task1(INPUT_FILE_PATH)
     assert trees == 230
-    print(f'Task 1: there are {trees} trees in the path.')
+    print(f"Task 1: there are {trees} trees in the path.")
     result = answer_task2(INPUT_FILE_PATH)
     assert result == 9533698720
-    print(f'Task 2: multiplication result is {result}.')
+    print(f"Task 2: multiplication result is {result}.")
 
 
 if __name__ == "__main__":

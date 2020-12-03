@@ -101,10 +101,10 @@ def main() -> None:
     expenses.sort()
     answer = answer_part1(expenses)
     assert answer > 0
-    print(f'Part 1 answer = {answer}')
+    print(f"Part 1 answer = {answer}")
     answer = answer_part2(expenses)
     assert answer > 0
-    print(f'Part 2 answer = {answer}')
+    print(f"Part 2 answer = {answer}")
 
 
 if __name__ == "__main__":

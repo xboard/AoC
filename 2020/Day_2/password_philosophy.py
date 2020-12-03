@@ -56,12 +56,12 @@ class PolicyTask2:
 
 # Type Alias
 Policy = Union[PolicyTask1, PolicyTask2]
-Password = NewType('Password', str)
+Password = NewType("Password", str)
 
 
-def parse_passwords(file_path: Path,
-                    policy_type: Type[Policy])\
-                         -> List[Tuple[Policy, Password]]:
+def parse_passwords(
+    file_path: Path, policy_type: Type[Policy]
+) -> List[Tuple[Policy, Password]]:
     """
     Parses passwords files and returns list of tuples with a policy
     and a passord.
@@ -86,9 +86,9 @@ def parse_passwords(file_path: Path,
             section = line.split(":")
             field = section[0].split(" ")
             minmax = field[0].strip().split("-")
-            policy = policy_type(int(minmax[0].strip()),
-                                 int(minmax[1].strip()),
-                                 field[1].strip())
+            policy = policy_type(
+                int(minmax[0].strip()), int(minmax[1].strip()), field[1].strip()
+            )
             policies.append((policy, Password(section[1].strip())))
     return policies
 
@@ -112,8 +112,10 @@ def answer_task1(entries: List[Tuple[PolicyTask1, Password]]) -> int:
     for policy, password in entries:
         counter = Counter(password)
         if policy.letter in counter:
-            if counter[policy.letter] >= policy.min_freq and\
-               counter[policy.letter] <= policy.max_freq:
+            if (
+                counter[policy.letter] >= policy.min_freq
+                and counter[policy.letter] <= policy.max_freq
+            ):
                 num_valid += 1
 
     return num_valid
@@ -137,12 +139,16 @@ def answer_task2(entries: List[Tuple[PolicyTask2, Password]]) -> int:
     num_valid = 0
     for policy, password in entries:
         valid = False
-        if policy.first_pos <= len(password) and\
-           password[policy.first_pos - 1] == policy.letter:
+        if (
+            policy.first_pos <= len(password)
+            and password[policy.first_pos - 1] == policy.letter
+        ):
             valid = True
 
-        if policy.second_pos <= len(password) and\
-           password[policy.second_pos - 1] == policy.letter:
+        if (
+            policy.second_pos <= len(password)
+            and password[policy.second_pos - 1] == policy.letter
+        ):
             valid ^= True
 
         if valid:
@@ -153,15 +159,19 @@ def answer_task2(entries: List[Tuple[PolicyTask2, Password]]) -> int:
 def main() -> None:
     """ Starting function """
 
-    entries1 = cast(List[Tuple[PolicyTask1, Password]],
-                    parse_passwords(INPUT_FILE_PATH, PolicyTask1))
+    entries1 = cast(
+        List[Tuple[PolicyTask1, Password]],
+        parse_passwords(INPUT_FILE_PATH, PolicyTask1),
+    )
     valid_passwords = answer_task1(entries1)
-    print(f'Task 1: there are {valid_passwords} valid password in database')
+    print(f"Task 1: there are {valid_passwords} valid password in database")
 
-    entries2 = cast(List[Tuple[PolicyTask2, Password]],
-                    parse_passwords(INPUT_FILE_PATH, PolicyTask2))
+    entries2 = cast(
+        List[Tuple[PolicyTask2, Password]],
+        parse_passwords(INPUT_FILE_PATH, PolicyTask2),
+    )
     valid_passwords = answer_task2(entries2)
-    print(f'Task 2: there are {valid_passwords} valid password in database')
+    print(f"Task 2: there are {valid_passwords} valid password in database")
 
 
 if __name__ == "__main__":
