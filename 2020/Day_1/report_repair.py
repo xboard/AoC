@@ -58,7 +58,7 @@ def answer_part1(expenses: List[int], target: int = 2020) -> int:
         if expenses[left] + expenses[right] == target:
             answer = expenses[left] * expenses[right]
             break
-        elif expenses[left] + expenses[right] < target:
+        if expenses[left] + expenses[right] < target:
             left += 1
         else:
             right -= 1
@@ -84,11 +84,11 @@ def answer_part2(expenses: List[int], target: int = 2020) -> int:
         the product of three expenses that sum to target.
     """
 
-    N = len(expenses)
+    num_expenses = len(expenses)
     answer = -1
-    for exp1 in range(N):
-        for exp2 in range(exp1 + 1, N):
-            for exp3 in range(exp2 + 1, N):
+    for exp1 in range(num_expenses):
+        for exp2 in range(exp1 + 1, num_expenses):
+            for exp3 in range(exp2 + 1, num_expenses):
                 if expenses[exp1] + expenses[exp2] + expenses[exp3] == target:
                     answer = expenses[exp1] * expenses[exp2] * expenses[exp3]
                     break
