@@ -34,11 +34,13 @@ jobs:
         run: python -m pip install --upgrade pip
 
       - name: Install and lint with black
+        if: ${{ always() }}
         run: |
               pip install --upgrade black
               black --check .
 
       - name: Install and lint with mypy
+        if: ${{ always() }}
         shell: bash
         run: |
               pip install --upgrade mypy
@@ -47,6 +49,7 @@ jobs:
               mypy **/*.py
 
       - name: Install and lint with pylint
+        if: ${{ always() }}
         shell: bash
         run: |
               pip install --upgrade pylint
@@ -55,6 +58,7 @@ jobs:
               pylint **/*.py
       
       - name: Install and lint with pycodesytle
+        if: ${{ always() }}
         shell: bash
         run: |
               pip install --upgrade pycodestyle
