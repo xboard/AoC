@@ -7,7 +7,7 @@ https://adventofcode.com/2020/day/4
 
 import sys
 import gzip
-from typing import Callable, Dict, List
+from typing import Callable, Dict, Iterator, List
 from pathlib import Path
 
 INPUT_FILE_PATH = Path(".") / "input.txt.gz"
@@ -251,9 +251,9 @@ def is_valid_task2(passport: Passport) -> bool:
     return True
 
 
-def read_passports(input_path: Path) -> List[Passport]:
+def read_passports(input_path: Path) -> Iterator[Passport]:
     """
-    Return list of all passports in input_file.
+    Iterate over all passports in input_file.
 
     Parameters
     ----------
@@ -262,21 +262,19 @@ def read_passports(input_path: Path) -> List[Passport]:
 
     Return
     ------
-    List[Passport]
-        List of passports read (valid or invalid).
+    Iterator[Passport]
+        Iterator to passports read (valid or invalid).
     """
-    passports = []
     with gzip.open(input_path, "rt", encoding="ascii") as file:
         lines: List[str] = []
         while line := file.readline():
             line = line.strip()
             if len(line) == 0:
-                passports.append(read_passport(lines))
+                yield read_passport(lines)
                 lines.clear()
             else:
                 lines.append(line)
-        passports.append(read_passport(lines))
-    return passports
+        yield read_passport(lines)
 
 
 def answer_task(input_path: Path, is_valid: Callable[[Passport], bool]) -> int:
@@ -297,8 +295,7 @@ def answer_task(input_path: Path, is_valid: Callable[[Passport], bool]) -> int:
         Number of valid passports.
     """
     num_valid = 0
-    passports = read_passports(input_path)
-    for passport in passports:
+    for passport in read_passports(input_path):
         if is_valid(passport):
             num_valid += 1
     return num_valid
