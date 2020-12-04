@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-    Solves day 3 tasks of AoC 2020.
-    https://adventofcode.com/2020/day/3
+Solves day 3 tasks of AoC 2020.
+
+https://adventofcode.com/2020/day/3
 """
 
 import gzip
@@ -61,19 +62,17 @@ def answer_task1(input_path: Path) -> int:
     input_path: Path
         Path to gziped input file.
 
-    Returns
-    -------
+    Return
+    ------
     int
         Number of trees '#' in path from top to bottom.
     """
-
     return answer_task(input_path, (3, 1))
 
 
 def answer_task2(input_path: Path) -> int:
     """
-    Solves task 2: multiplication of number of trees under a set
-    of predefined slopes.
+    Multiply number of trees under a set of predefined slopes.
 
     Parameters
     ----------
@@ -85,7 +84,6 @@ def answer_task2(input_path: Path) -> int:
     int
         multiplication of number of trees.
     """
-
     return reduce(
         lambda a, b: a * b,
         [
@@ -96,8 +94,7 @@ def answer_task2(input_path: Path) -> int:
 
 
 def main() -> None:
-    """ Starting function """
-
+    """Start script."""
     trees = answer_task1(INPUT_FILE_PATH)
     assert trees == 230
     print(f"Task 1: there are {trees} trees in the path.")

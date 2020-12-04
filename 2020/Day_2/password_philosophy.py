@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-    Solves day 2 tasks of AoC 2020.
-    https://adventofcode.com/2020/day/2
+Solves day 2 tasks of AoC 2020.
+
+https://adventofcode.com/2020/day/2
 """
 
 from dataclasses import dataclass
@@ -63,8 +64,7 @@ def parse_passwords(
     file_path: Path, policy_type: Type[Policy]
 ) -> List[Tuple[Policy, Password]]:
     """
-    Parses passwords files and returns list of tuples with a policy
-    and a passord.
+    Parse passwords file and returns list of policies and a passords.
 
     Parameters
     ----------
@@ -74,12 +74,11 @@ def parse_passwords(
     policy_type: Type[Policy]
             Type of policy to be returned.
 
-    Returns
-    -------
+    Return
+    ------
     List[Tuple[Policy, Password]]
         a list of tuples with policy and password for each entry in given file.
     """
-
     policies = []
     with open(file_path, "r") as file:
         while line := file.readline():
@@ -102,12 +101,11 @@ def answer_task1(entries: List[Tuple[PolicyTask1, Password]]) -> int:
     entries: List[Tuple[PolicyTask1, str]]
         List of tuples of policy and passords.
 
-    Returns
-    -------
+    Return
+    ------
     int
         Number of passwords conformant to task 1 policy.
     """
-
     num_valid = 0
     for policy, password in entries:
         counter = Counter(password)
@@ -135,7 +133,6 @@ def answer_task2(entries: List[Tuple[PolicyTask2, Password]]) -> int:
     int
         Number of passwords conformant to task 2 policy.
     """
-
     num_valid = 0
     for policy, password in entries:
         valid = False
@@ -157,8 +154,7 @@ def answer_task2(entries: List[Tuple[PolicyTask2, Password]]) -> int:
 
 
 def main() -> None:
-    """ Starting function """
-
+    """Start script."""
     entries1 = cast(
         List[Tuple[PolicyTask1, Password]],
         parse_passwords(INPUT_FILE_PATH, PolicyTask1),
