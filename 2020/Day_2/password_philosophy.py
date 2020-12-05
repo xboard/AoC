@@ -92,7 +92,7 @@ def parse_passwords(
     return policies
 
 
-def answer_task1(entries: List[Tuple[PolicyTask1, Password]]) -> int:
+def task1(entries: List[Tuple[PolicyTask1, Password]]) -> int:
     """
     Solves task 1.
 
@@ -119,7 +119,7 @@ def answer_task1(entries: List[Tuple[PolicyTask1, Password]]) -> int:
     return num_valid
 
 
-def answer_task2(entries: List[Tuple[PolicyTask2, Password]]) -> int:
+def task2(entries: List[Tuple[PolicyTask2, Password]]) -> int:
     """
     Solves task 2.
 
@@ -159,14 +159,14 @@ def main() -> None:
         List[Tuple[PolicyTask1, Password]],
         parse_passwords(INPUT_FILE_PATH, PolicyTask1),
     )
-    valid_passwords = answer_task1(entries1)
+    valid_passwords = task1(entries1)
     print(f"Task 1: there are {valid_passwords} valid password in database")
 
     entries2 = cast(
         List[Tuple[PolicyTask2, Password]],
         parse_passwords(INPUT_FILE_PATH, PolicyTask2),
     )
-    valid_passwords = answer_task2(entries2)
+    valid_passwords = task2(entries2)
     print(f"Task 2: there are {valid_passwords} valid password in database")
 
 
