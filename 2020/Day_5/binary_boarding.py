@@ -104,7 +104,7 @@ def task2(file_path: Path) -> SeatId:
     print(seats)
     for i in range(1, len(seats) - 1):
         if seats[i - 1] + 1 == seats[i] - 1:
-            return seats[i] - 1
+            return SeatId(seats[i] - 1)
     raise Exception("Seat not found!")
 
 
