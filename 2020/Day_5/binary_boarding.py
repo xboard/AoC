@@ -101,7 +101,7 @@ def task2(file_path: Path) -> SeatId:
     for path in read_paths(file_path):
         seats.append(get_id_from_path(path))
     seats.sort()
-    print(seats)
+
     for i in range(1, len(seats) - 1):
         if seats[i - 1] + 1 == seats[i] - 1:
             return SeatId(seats[i] - 1)
