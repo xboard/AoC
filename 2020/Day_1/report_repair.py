@@ -32,7 +32,7 @@ def read_expenses(file_path: Path) -> List[int]:
     return expenses
 
 
-def answer_part1(expenses: List[int], target: int = 2020) -> int:
+def task1(expenses: List[int], target: int = 2020) -> int:
     """
     Product of two numbers in expense list such that their sum equals target.
 
@@ -64,11 +64,11 @@ def answer_part1(expenses: List[int], target: int = 2020) -> int:
     return answer
 
 
-def answer_part2(expenses: List[int], target: int = 2020) -> int:
+def task2(expenses: List[int], target: int = 2020) -> int:
     """
     Product of three numbers in expense list such that their sum equals target.
 
-    O(N^3) solution since N is low (200 elements).
+    Brute-force O(N^3) solution since N is very low (200 elements).
     Parameters
     ----------
     expenses: List[int]
@@ -96,10 +96,10 @@ def main() -> None:
     """Start script."""
     expenses = read_expenses(INPUT_FILE_PATH)
     expenses.sort()
-    answer = answer_part1(expenses)
+    answer = task1(expenses)
     assert answer > 0
     print(f"Part 1 answer = {answer}")
-    answer = answer_part2(expenses)
+    answer = task2(expenses)
     assert answer > 0
     print(f"Part 2 answer = {answer}")
 

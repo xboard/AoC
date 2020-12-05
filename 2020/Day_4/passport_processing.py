@@ -277,7 +277,7 @@ def read_passports(input_path: Path) -> Iterator[Passport]:
         yield read_passport(lines)
 
 
-def answer_task(input_path: Path, is_valid: Callable[[Passport], bool]) -> int:
+def solve_task(input_path: Path, is_valid: Callable[[Passport], bool]) -> int:
     """
     Solves task 1 and 2: number of valid passports.
 
@@ -303,11 +303,11 @@ def answer_task(input_path: Path, is_valid: Callable[[Passport], bool]) -> int:
 
 def main() -> None:
     """Run script."""
-    num_valid_passports = answer_task(INPUT_FILE_PATH, is_valid_task1)
+    num_valid_passports = solve_task(INPUT_FILE_PATH, is_valid_task1)
     assert num_valid_passports == 216
     print(f"Task 1: there are {num_valid_passports} valid passports.")
 
-    num_valid_passports = answer_task(INPUT_FILE_PATH, is_valid_task2)
+    num_valid_passports = solve_task(INPUT_FILE_PATH, is_valid_task2)
     assert num_valid_passports == 150
     print(f"Task 2: there are {num_valid_passports} valid passports.")
 
