@@ -6,11 +6,12 @@ https://adventofcode.com/2020/day/6
 """
 
 import gzip
+from os.path import dirname, realpath
 from io import StringIO
 from typing import Sequence, List, Set, IO, Iterator, NewType, cast
 from pathlib import Path
 
-INPUT_FILE_PATH = Path(".") / "input.txt.gz"
+INPUT_FILE_PATH = Path(dirname(realpath(__file__))) / "input.txt.gz"
 
 # Defines type to represent customs answers from a group.
 GroupCustoms = NewType("GroupCustoms", Sequence[str])
