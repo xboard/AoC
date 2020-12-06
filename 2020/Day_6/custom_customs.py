@@ -110,11 +110,11 @@ def get_input_file() -> Path:
 def main() -> None:
     """Run script."""
     input_file = get_input_file()
-    with gzip.open(input_file) as file:
+    with gzip.open(input_file, "rt", encoding="ascii") as file:
         questions_solved = task1(cast("IO", file))
         print(f"Task 1: {questions_solved} questions solved.")
 
-    with gzip.open(input_file) as file:
+    with gzip.open(input_file, "rt", encoding="ascii") as file:
         questions_solved = task2(cast("IO", file))
         print(f"Task 2: answer is {questions_solved}.")
 
