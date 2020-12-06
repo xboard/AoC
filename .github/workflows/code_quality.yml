@@ -80,5 +80,6 @@ jobs:
         shell: bash
         run: |
               pip install --upgrade pytest
+              shopt -s globstar nullglob dotglob
               echo ">>> Running pytest..."
-              pytest .
+              pytest **/*.py
