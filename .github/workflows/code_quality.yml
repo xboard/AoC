@@ -72,5 +72,13 @@ jobs:
         run: |
               pip install --upgrade pycodestyle
               shopt -s globstar nullglob dotglob
-              echo "Running pycodestyle..."
+              echo ">>> Running pycodestyle..."
               pycodestyle **/*.py
+
+      - name: Install and run pytest
+        if: ${{ always() }}
+        shell: bash
+        run: |
+              pip install --upgrade pytest
+              echo ">>> Running pytest..."
+              pytest .
