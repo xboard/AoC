@@ -7,11 +7,12 @@ https://adventofcode.com/2020/day/5
 
 import argparse
 import gzip
+from os.path import dirname, realpath
 from io import StringIO
 from typing import List, Iterator, IO, NewType, cast
 from pathlib import Path
 
-INPUT_FILE_PATH = Path(".") / "input.txt.gz"
+INPUT_FILE_PATH = Path(dirname(realpath(__file__))) / "input.txt.gz"
 ROW_LENGTH = 7
 
 SeatId = NewType("SeatId", int)
