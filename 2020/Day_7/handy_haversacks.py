@@ -3,6 +3,15 @@
 Solves day 7 tasks of AoC 2020.
 
 https://adventofcode.com/2020/day/7
+
+The problem descriptions allow us to model the rules as a DAG (directed acyclic
+graph) where a bag color is a node and directed edges point to all other color
+bags that must be inside it.
+
+References
+----------
+DAG: https://en.wikipedia.org/wiki/Directed_acyclic_graph
+DFS: https://en.wikipedia.org/wiki/Depth-first_search
 """
 
 import argparse
@@ -11,6 +20,7 @@ from os.path import dirname, realpath
 from io import StringIO
 from typing import List, Tuple, Dict, IO, NewType, cast
 from pathlib import Path
+from functools import lru_cache
 
 INPUT_FILE_PATH = Path(dirname(realpath(__file__))) / "input.txt.gz"
 
@@ -32,7 +42,7 @@ def generate_graph(input_io: IO) -> BagGraph:
     BagGraph
         Graph representing bag rules.
     """
-    graph = cast("BagGraph", dict())
+    dag = cast("BagGraph", dict())
     while line := input_io.readline():
         line = line.strip()
         section = [
@@ -40,19 +50,19 @@ def generate_graph(input_io: IO) -> BagGraph:
             for s in line.split("contain")
         ]
         key = BagColor(section[0])
-        graph[key] = list()
+        dag[key] = list()
         if "no other" not in section[1]:
             bags = section[1].split(",")
             for bag in bags:
-                graph[key].append(
+                dag[key].append(
                     (BagColor(" ".join(bag.split()[1:])), int(bag.split()[0]))
                 )
-    return graph
+    return dag
 
 
 def task1(input_io: IO, bag_color: BagColor) -> int:
     """
-    Solve task 1.
+    Solve task 1 using DFS and memoization.
 
     Parameters
     ----------
@@ -67,33 +77,24 @@ def task1(input_io: IO, bag_color: BagColor) -> int:
     int
         how many bag colors can eventually contain at least one bag_color.
     """
-    graph = generate_graph(input_io)
-    memo: Dict[BagColor, bool] = dict()
+    dag = generate_graph(input_io)
 
+    @lru_cache
     def dfs(node: BagColor) -> bool:
         if node == bag_color:
             return True
-        if node in memo:
-            return memo[node]
-        for neigh, _ in graph[node]:
+        for neigh, _ in dag[node]:
             found = dfs(neigh)
-            memo[neigh] = found
             if found:
-                memo[node] = True
                 return True
-        memo[node] = False
         return False
 
-    for root in graph:
-        if root not in memo:
-            dfs(root)
-
-    return sum(memo[key] for key in memo) - 1
+    return sum(dfs(root) for root in dag if root != bag_color)
 
 
 def task2(input_io: IO, bag_color: BagColor) -> int:
     """
-    Solve task 2.
+    Solve task 2 using DFS.
 
     Parameters
     ----------
@@ -109,11 +110,12 @@ def task2(input_io: IO, bag_color: BagColor) -> int:
         how many indivigual bags are required inside a single bag_color.
 
     """
-    graph = generate_graph(input_io)
+    dag = generate_graph(input_io)
 
+    @lru_cache
     def dfs(node: BagColor) -> int:
         total = 0
-        for neigh, qtd in graph[node]:
+        for neigh, qtd in dag[node]:
             total += qtd + qtd * dfs(neigh)
         return total
 
@@ -173,16 +175,16 @@ dotted black bags contain no other bags."""
 
 def test_generate_graph():
     """Test generate_graph."""
-    graph = generate_graph(input_stream())
+    dag = generate_graph(input_stream())
 
-    assert len(graph.keys()) == 9
-    assert len(graph["light red"]) == 2
-    assert graph["light red"][0][1] == 1
-    assert graph["light red"][1][1] == 2
-    assert len(graph["faded blue"]) == 0
-    assert len(graph["dotted black"]) == 0
-    assert len(graph["bright white"]) == 1
-    assert graph["bright white"][0][1] == 1
+    assert len(dag.keys()) == 9
+    assert len(dag["light red"]) == 2
+    assert dag["light red"][0][1] == 1
+    assert dag["light red"][1][1] == 2
+    assert len(dag["faded blue"]) == 0
+    assert len(dag["dotted black"]) == 0
+    assert len(dag["bright white"]) == 1
+    assert dag["bright white"][0][1] == 1
 
 
 def test_task1_with_example_input():
