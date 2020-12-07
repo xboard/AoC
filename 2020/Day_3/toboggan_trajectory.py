@@ -5,22 +5,25 @@ Solves day 3 tasks of AoC 2020.
 https://adventofcode.com/2020/day/3
 """
 
+import argparse
 import gzip
+from io import StringIO
+from os.path import dirname, realpath
 from typing import Tuple, Optional, IO
 from pathlib import Path
 from functools import reduce
 
-INPUT_FILE_PATH = Path(".") / "input.txt.gz"
+INPUT_FILE_PATH = Path(dirname(realpath(__file__))) / "input.txt.gz"
 
 
-def answer_task(input_path: Path, slope: Tuple[int, int]) -> int:
+def solve_task(input_io: IO, slope: Tuple[int, int]) -> int:
     """
     Solves task 1: number of trees for slope right 3 down 1.
 
     Parameters
     ----------
-    input_path: Path
-        Path to gziped input file.
+    input_io: IO
+        Map stream.
 
     slope: (slope_right: int, slope_down: int)
         Slope to use from top to botton.
@@ -32,52 +35,53 @@ def answer_task(input_path: Path, slope: Tuple[int, int]) -> int:
         Number of trees '#' in path from top to bottom.
     """
 
-    def go_down(file: IO, amount: int) -> Optional[str]:
+    def go_down(amount: int) -> Optional[str]:
+        """Try to advance amount lines 'down' in the map stream."""
         line = None
-        while (amount > 0) and (line := file.readline()):
+        while (amount > 0) and (line := input_io.readline()):
             amount -= 1
         return line
 
     trees = 0
     slope_right, slope_down = slope
-    with gzip.open(input_path, "rt", encoding="ascii") as file:
-        fline = file.readline().strip()
-        assert fline[0] == "."
-        columns = len(fline)
-        current_column = 0
-        while line := go_down(file, slope_down):
-            line = line.strip()
-            current_column += slope_right
-            current_column %= columns
-            trees += line[current_column] == "#"
+    fline = input_io.readline().strip()
+    assert fline[0] == "."
+    columns = len(fline)
+    current_column = 0
+    while line := go_down(slope_down):
+        line = line.strip()
+        current_column += slope_right
+        current_column %= columns
+        trees += line[current_column] == "#"
+    input_io.seek(0)
     return trees
 
 
-def answer_task1(input_path: Path) -> int:
+def solve_task1(input_io: IO) -> int:
     """
     Solves task 1: number of trees for slope right 3 down 1.
 
     Parameters
     ----------
-    input_path: Path
-        Path to gziped input file.
+    input_io: IO
+        Map stream.
 
     Return
     ------
     int
         Number of trees '#' in path from top to bottom.
     """
-    return answer_task(input_path, (3, 1))
+    return solve_task(input_io, (3, 1))
 
 
-def answer_task2(input_path: Path) -> int:
+def solve_task2(input_io: IO) -> int:
     """
     Multiply number of trees under a set of predefined slopes.
 
     Parameters
     ----------
-    input_path: Path
-        Path to gziped input file.
+    input_io: IO
+        Map stream.
 
     Returns
     -------
@@ -86,22 +90,77 @@ def answer_task2(input_path: Path) -> int:
     """
     return reduce(
         lambda a, b: a * b,
-        [
-            answer_task(input_path, slope)
+        (
+            solve_task(input_io, slope)
             for slope in [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)]
-        ],
+        ),
     )
 
 
+def get_input_file() -> Path:
+    """
+    Parse arguments passed to script.
+
+    Return:
+    Path
+        path to gziped file for this problem.
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument("GZIPED_FILE", help="gziped file for this problem")
+    args = parser.parse_args()
+    return Path(args.GZIPED_FILE)
+
+
 def main() -> None:
-    """Start script."""
-    trees = answer_task1(INPUT_FILE_PATH)
-    assert trees == 230
-    print(f"Task 1: there are {trees} trees in the path.")
-    result = answer_task2(INPUT_FILE_PATH)
-    assert result == 9533698720
-    print(f"Task 2: multiplication result is {result}.")
+    """Run script."""
+    input_file = get_input_file()
+
+    with gzip.open(input_file, "rt", encoding="ascii") as file:
+        trees = solve_task1(file)
+        print(f"Task 1: there are {trees} trees in the path.")
+
+    with gzip.open(input_file, "rt", encoding="ascii") as file:
+        result = solve_task2(file)
+        print(f"Task 2: multiplication result is {result}.")
 
 
 if __name__ == "__main__":
     main()
+
+#######################
+#    Tests section    #
+#######################
+
+
+def test_solve_task():
+    """Test solve_task with example."""
+    map_stream = StringIO(
+        """..##.......
+#...#...#..
+.#....#..#.
+..#.#...#.#
+.#...##..#.
+..#.##.....
+.#.#.#....#
+.#........#
+#.##...#...
+#...##....#
+.#..#...#.#
+"""
+    )
+    trees = solve_task(map_stream, (3, 1))
+    assert trees == 7
+
+
+def test_task1_with_input_file():
+    """Test task1 with given input file (gziped)."""
+    with gzip.open(INPUT_FILE_PATH, "rt", encoding="ascii") as file:
+        trees = solve_task1(file)
+        assert trees == 230
+
+
+def test_task2_with_input_file():
+    """Test task2 with given input file (gziped)."""
+    with gzip.open(INPUT_FILE_PATH, "rt", encoding="ascii") as file:
+        result = solve_task2(file)
+        assert result == 9533698720
