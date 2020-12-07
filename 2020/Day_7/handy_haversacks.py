@@ -19,7 +19,19 @@ BagGraph = NewType("BagGraph", Dict[BagColor, List[Tuple[BagColor, int]]])
 
 
 def generate_graph(input_io: IO) -> BagGraph:
-    """Generate graph with Bag rules."""
+    """
+    Generate graph with Bag rules.
+
+    Parameters
+    ----------
+    input_io: IO
+        stream to all bag rules.
+
+    Return
+    ------
+    BagGraph
+        Graph representing bag rules.
+    """
     graph = cast("BagGraph", dict())
     while line := input_io.readline():
         line = line.strip()
@@ -45,13 +57,15 @@ def task1(input_io: IO, bag_color: BagColor) -> int:
     Parameters
     ----------
     input_io: IO
-        stream to all .
+        stream to all bag rules.
+
+    bag_color: BagColor
+        bag color that must be included.
 
     Return
     ------
     int
-        .
-
+        how many bag colors can eventually contain at least one bag_color.
     """
     graph = generate_graph(input_io)
     memo: Dict[BagColor, bool] = dict()
@@ -84,12 +98,15 @@ def task2(input_io: IO, bag_color: BagColor) -> int:
     Parameters
     ----------
     input_io: IO
-        stream to all .
+        stream to all bag rules.
+
+    bag_color: BagColor
+        bag color of most external bag.
 
     Return
     ------
     int
-        .
+        how many indivigual bags are required inside a single bag_color.
 
     """
     graph = generate_graph(input_io)
