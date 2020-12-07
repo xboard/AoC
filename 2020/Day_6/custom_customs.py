@@ -58,7 +58,7 @@ def task1(input_io: IO) -> int:
 
     """
     num_questions_solved = 0
-    
+
     for group_custom in read_groups_customs(input_io):
         questions_set: Set[str] = set()
         for answer in group_custom:
