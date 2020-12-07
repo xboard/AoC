@@ -5,20 +5,24 @@ Solves problems for Day 1 of AoC 2020.
 https://adventofcode.com/2020/day/1
 """
 
-from typing import List
+import argparse
+import gzip
+from io import StringIO
+from os.path import dirname, realpath
+from typing import List, IO
 from pathlib import Path
 
-INPUT_FILE_PATH = Path(".") / "input.txt"
+INPUT_FILE_PATH = Path(dirname(realpath(__file__))) / "input.txt.gz"
 
 
-def read_expenses(file_path: Path) -> List[int]:
+def read_expenses(input_io: IO) -> List[int]:
     """
     Read expenses in file and returns as list of integers.
 
     Parameters
     ----------
-    file_path: Path
-            Path to expenses file
+    input_io: IO
+            Stream of expenses.
 
     Return
     ------
@@ -26,9 +30,8 @@ def read_expenses(file_path: Path) -> List[int]:
         a list of integers (expenses).
     """
     expenses = []
-    with open(file_path, "r") as file:
-        while line := file.readline():
-            expenses.append(int(line))
+    while line := input_io.readline():
+        expenses.append(int(line))
     return expenses
 
 
@@ -92,17 +95,88 @@ def task2(expenses: List[int], target: int = 2020) -> int:
     return answer
 
 
+def get_input_file() -> Path:
+    """
+    Parse arguments passed to script.
+
+    Return:
+    Path
+        path to gziped file for this problem.
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument("GZIPED_FILE", help="gziped file for this problem")
+    args = parser.parse_args()
+    return Path(args.GZIPED_FILE)
+
+
 def main() -> None:
     """Start script."""
-    expenses = read_expenses(INPUT_FILE_PATH)
-    expenses.sort()
-    answer = task1(expenses)
-    assert answer > 0
-    print(f"Part 1 answer = {answer}")
-    answer = task2(expenses)
-    assert answer > 0
-    print(f"Part 2 answer = {answer}")
+    input_file = get_input_file()
+    with gzip.open(input_file, "rt", encoding="ascii") as file:
+        expenses = read_expenses(file)
+        expenses.sort()
+        answer = task1(expenses)
+        print(f"Part 1 answer = {answer}")
+        answer = task2(expenses)
+        print(f"Part 2 answer = {answer}")
 
 
 if __name__ == "__main__":
     main()
+
+#######################
+#    Tests section    #
+#######################
+
+
+def input_stream() -> IO:
+    """Input stream fixture."""
+    return StringIO(
+        """1721
+979
+366
+299
+675
+1456"""
+    )
+
+
+def test_read_expenses():
+    """Test parse_passwords."""
+    expenses = read_expenses(input_stream())
+    assert len(expenses) == 6
+    assert sum(expenses) == 5496
+
+
+def test_task1_with_example_input():
+    """Test task 1."""
+    expenses = read_expenses(input_stream())
+    expenses.sort()
+    answer = task1(expenses)
+    assert answer == 514579
+
+
+def test_taks1_with_input_file():
+    """Test task1 with given input file (gziped)."""
+    with gzip.open(INPUT_FILE_PATH, "rt", encoding="ascii") as file:
+        expenses = read_expenses(file)
+        expenses.sort()
+        answer = task1(expenses)
+        assert answer == 440979
+
+
+def test_task2_with_example_input():
+    """Test task 2."""
+    expenses = read_expenses(input_stream())
+    expenses.sort()
+    answer = task2(expenses)
+    assert answer == 241861950
+
+
+def test_taks2_with_input_file():
+    """Test task2 with given input file (gziped)."""
+    with gzip.open(INPUT_FILE_PATH, "rt", encoding="ascii") as file:
+        expenses = read_expenses(file)
+        expenses.sort()
+        answer = task2(expenses)
+        assert answer == 82498112
