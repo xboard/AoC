@@ -6,11 +6,14 @@ https://adventofcode.com/2020/day/4
 """
 
 import sys
+import argparse
 import gzip
-from typing import Callable, Dict, Iterator, List
+from os.path import dirname, realpath
+from io import StringIO
+from typing import Callable, Dict, Iterator, List, IO
 from pathlib import Path
 
-INPUT_FILE_PATH = Path(".") / "input.txt.gz"
+INPUT_FILE_PATH = Path(dirname(realpath(__file__))) / "input.txt.gz"
 
 Passport = Dict[str, str]
 
@@ -251,7 +254,7 @@ def is_valid_task2(passport: Passport) -> bool:
     return True
 
 
-def read_passports(input_path: Path) -> Iterator[Passport]:
+def read_passports(input_io: IO) -> Iterator[Passport]:
     """
     Iterate over all passports in input_file.
 
@@ -265,26 +268,25 @@ def read_passports(input_path: Path) -> Iterator[Passport]:
     Iterator[Passport]
         Iterator to passports read (valid or invalid).
     """
-    with gzip.open(input_path, "rt", encoding="ascii") as file:
-        lines: List[str] = []
-        while line := file.readline():
-            line = line.strip()
-            if len(line) == 0:
-                yield read_passport(lines)
-                lines.clear()
-            else:
-                lines.append(line)
-        yield read_passport(lines)
+    lines: List[str] = []
+    while line := input_io.readline():
+        line = line.strip()
+        if len(line) == 0:
+            yield read_passport(lines)
+            lines.clear()
+        else:
+            lines.append(line)
+    yield read_passport(lines)
 
 
-def solve_task(input_path: Path, is_valid: Callable[[Passport], bool]) -> int:
+def solve_task(input_io: IO, is_valid: Callable[[Passport], bool]) -> int:
     """
-    Solves task 1 and 2: number of valid passports.
+    Solve task 1 and 2: number of valid passports.
 
     Parameters
     ----------
-    input_path: Path
-        Path to gziped input file with all passports to be validated.
+    input_io: IO
+        Stream of passports to be validated.
 
     is_valid: Callable[[Passport], bool]
         function to validate each passport.
@@ -295,22 +297,152 @@ def solve_task(input_path: Path, is_valid: Callable[[Passport], bool]) -> int:
         Number of valid passports.
     """
     num_valid = 0
-    for passport in read_passports(input_path):
+    for passport in read_passports(input_io):
         if is_valid(passport):
             num_valid += 1
     return num_valid
 
 
+def get_input_file() -> Path:
+    """
+    Parse arguments passed to script.
+
+    Return:
+    Path
+        path to gziped file for this problem.
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument("GZIPED_FILE", help="gziped file for this problem")
+    args = parser.parse_args()
+    return Path(args.GZIPED_FILE)
+
+
 def main() -> None:
     """Run script."""
-    num_valid_passports = solve_task(INPUT_FILE_PATH, is_valid_task1)
-    assert num_valid_passports == 216
-    print(f"Task 1: there are {num_valid_passports} valid passports.")
+    input_file = get_input_file()
 
-    num_valid_passports = solve_task(INPUT_FILE_PATH, is_valid_task2)
-    assert num_valid_passports == 150
-    print(f"Task 2: there are {num_valid_passports} valid passports.")
+    with gzip.open(input_file, "rt", encoding="ascii") as file:
+        num_valid_passports = solve_task(file, is_valid_task1)
+        print(f"Task 1: there are {num_valid_passports} valid passports.")
+
+    with gzip.open(input_file, "rt", encoding="ascii") as file:
+        num_valid_passports = solve_task(file, is_valid_task2)
+        print(f"Task 2: there are {num_valid_passports} valid passports.")
 
 
 if __name__ == "__main__":
     main()
+
+#######################
+#    Tests section    #
+#######################
+
+
+def test_validate_passport_fields():
+    """Test passport field validation."""
+    assert is_valid_field("byr", "2002")
+    assert not is_valid_field("byr", "2003")
+
+    assert is_valid_field("hgt", "60in")
+    assert is_valid_field("hgt", "190cm")
+    assert not is_valid_field("hgt", "190in")
+    assert not is_valid_field("hgt", "190")
+
+    assert is_valid_field("hcl", "#123abc")
+    assert not is_valid_field("hcl", "#123abz")
+    assert not is_valid_field("hcl", "123abc")
+
+    assert is_valid_field("ecl", "brn")
+    assert not is_valid_field("ecl", "wat")
+
+    assert is_valid_field("pid", "000000001")
+    assert not is_valid_field("pid", "0123456789")
+
+
+def test_invalid_passports_task1():
+    """Test task 1 invalid passports."""
+    passport_stream = StringIO(
+        """iyr:2013 ecl:amb cid:350 eyr:2023 pid:028048884
+hcl:#cfa07d byr:1929
+
+hcl:#cfa07d eyr:2025 pid:166559648
+iyr:2011 ecl:brn hgt:59in
+"""
+    )
+    passports = tuple(read_passports(passport_stream))
+    assert len(passports) == 2
+    assert all(not is_valid_task1(passport) for passport in passports)
+
+
+def test_valid_passports_task1():
+    """Test task 1 valid passports."""
+    passport_stream = StringIO(
+        """eyr:1972 cid:100
+hcl:#18171d ecl:amb hgt:170 pid:186cm iyr:2018 byr:1926
+
+hcl:dab227 iyr:2012
+ecl:brn hgt:182cm pid:021572410 eyr:2020 byr:1992 cid:277
+"""
+    )
+    passports = tuple(read_passports(passport_stream))
+    assert len(passports) == 2
+    assert all(is_valid_task1(passport) for passport in passports)
+
+
+def test_invalid_passports_task2():
+    """Test task 2 invalid passports."""
+    passport_stream = StringIO(
+        """eyr:1972 cid:100
+hcl:#18171d ecl:amb hgt:170 pid:186cm iyr:2018 byr:1926
+
+iyr:2019
+hcl:#602927 eyr:1967 hgt:170cm
+ecl:grn pid:012533040 byr:1946
+
+hcl:dab227 iyr:2012
+ecl:brn hgt:182cm pid:021572410 eyr:2020 byr:1992 cid:277
+
+hgt:59cm ecl:zzz
+eyr:2038 hcl:74454a iyr:2023
+pid:3556412378 byr:2007
+"""
+    )
+    passports = tuple(read_passports(passport_stream))
+    assert len(passports) == 4
+    assert all(not is_valid_task2(passport) for passport in passports)
+
+
+def test_valid_passports_task2():
+    """Test task2 valid passports."""
+    passport_stream = StringIO(
+        """pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:1980
+hcl:#623a2f
+
+eyr:2029 ecl:blu cid:129 byr:1989
+iyr:2014 pid:896056539 hcl:#a97842 hgt:165cm
+
+hcl:#888785
+hgt:164cm byr:2001 iyr:2015 cid:88
+pid:545766238 ecl:hzl
+eyr:2022
+
+iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719
+"""
+    )
+    passports = tuple(read_passports(passport_stream))
+    assert len(passports) == 4
+    assert all(is_valid_task2(passport) for passport in passports)
+
+
+def test_task1_with_input_file():
+    """Test task1 with given input file (gziped)."""
+    with gzip.open(INPUT_FILE_PATH, "rt", encoding="ascii") as file:
+        num_valid_passports = solve_task(file, is_valid_task1)
+        assert num_valid_passports == 216
+
+
+def test_task2_with_input_file():
+    """Test task2 with given input file (gziped)."""
+    with gzip.open(INPUT_FILE_PATH, "rt", encoding="ascii") as file:
+        num_valid_passports = solve_task(file, is_valid_task2)
+        assert num_valid_passports == 150
