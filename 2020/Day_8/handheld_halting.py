@@ -26,7 +26,7 @@ class Operation(Enum):
 
     @classmethod
     def from_string(cls, oper: str) -> "Operation":
-        """Convert Op name to an Op object."""
+        """Convert Operation name oper to an Operation object."""
         oper = oper.strip().upper()
         if oper in cls.__members__:
             return cls.__members__[oper]
@@ -42,7 +42,18 @@ class Instruction:
 
 
 def read_instructions(input_io: IO) -> Iterator[Instruction]:
-    """Read instructions."""
+    """
+    Generate reading instructions from stream.
+
+    Parameters
+    ----------
+    input_io: IO
+        program stream.
+
+    Return
+    ------
+    Iterator[Instruction]
+    """
     while line := input_io.readline():
         line = line.strip()
         yield Instruction(Operation.from_string(line[:3]), int(line[3:]))
@@ -50,7 +61,7 @@ def read_instructions(input_io: IO) -> Iterator[Instruction]:
 
 def run_until_loop_or_end(program: Sequence[Instruction]) -> Tuple[int, bool]:
     """
-    Interpret program until the end or finds a loop.
+    Run entire program or until finds a loop.
 
     Parameters
     ----------
@@ -62,7 +73,7 @@ def run_until_loop_or_end(program: Sequence[Instruction]) -> Tuple[int, bool]:
     Tuple[int, bool]
         int: last value of acc.
         bool: True if found loop.
-              False if program was interpreted until the end.
+              False if program ran til the end.
 
     Raises
     ------
@@ -120,7 +131,7 @@ def task1(input_io: IO) -> int:
     ------
     Exception
         if no loop in found in given program.
-        This is not suposed to happen with given AoC input.
+        This is not suposed to raise with AoC input.
     NotImplementedError
         if program has instruction not implemented.
     """
@@ -135,6 +146,9 @@ def task2(input_io: IO) -> int:
     """
     Solve task 2.
 
+    Brute forces changing 'jmp' -> 'nop' and 'nop' -> 'jmp'
+    until find solution.
+
     Parameters
     ----------
     input_io: IO
@@ -144,6 +158,12 @@ def task2(input_io: IO) -> int:
     ------
     int
         value of acc after fix and program finishes.
+
+    Raises
+    ------
+    Exception
+        if program still loops.
+        This is not supposed to raise with AoC input.
 
     """
     program = tuple(read_instructions(input_io))
