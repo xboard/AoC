@@ -78,11 +78,10 @@ jobs:
               echo ">>> Running pycodestyle..."
               pycodestyle **/*.py
 
-      - name: Install and run pytest
+      - name: Run pytest
         if: ${{ always() }}
         shell: bash
         run: |
-              pip install --upgrade pytest
               shopt -s globstar nullglob dotglob
               echo ">>> Running pytest..."
               pytest **/*.py
