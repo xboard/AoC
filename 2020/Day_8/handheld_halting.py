@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Solves day X tasks of AoC 2020.
+Solves day 8 tasks of AoC 2020.
 
-https://adventofcode.com/2020/day/X
+https://adventofcode.com/2020/day/8
 """
 
 import argparse
