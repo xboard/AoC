@@ -9,7 +9,7 @@ import argparse
 import gzip
 from os.path import dirname, realpath
 from io import StringIO
-from typing import Sequence, List, Set, IO, Iterator, NewType, cast
+from typing import IO, Iterator
 from pathlib import Path
 
 INPUT_FILE_PATH = Path(dirname(realpath(__file__))) / "input.txt.gz"
@@ -26,10 +26,10 @@ def read_numbers(input_io: IO) -> Iterator[int]:
 
     Return
     ------
-    Iterator[int]    
+    Iterator[int]
     """
     while line := input_io.readline():
-        yield (int(line.strip()))
+        yield int(line.strip())
 
 
 def task1(input_io: IO, preamble: int) -> int:
@@ -106,19 +106,19 @@ def task2(input_io: IO, target_sum: int) -> int:
     numbers = tuple(read_numbers(input_io))
     prefix_sum = [0] * (len(numbers) + 1)
     for i, number in enumerate(numbers):
-        prefix_sum[i+1] = number + prefix_sum[i]
-    L, R = 0, 1
+        prefix_sum[i + 1] = number + prefix_sum[i]
+    left, right = 0, 1
     found = False
-    while not found and R < len(prefix_sum):
-        if prefix_sum[R] - prefix_sum[L] == target_sum:
+    while not found and right < len(prefix_sum):
+        if prefix_sum[right] - prefix_sum[left] == target_sum:
             found = True
-        elif prefix_sum[R] - prefix_sum[L] < target_sum:
-            R += 1
+        elif prefix_sum[right] - prefix_sum[left] < target_sum:
+            right += 1
         else:
-            L += 1
+            left += 1
     if not found:
         raise Exception("Not found!")
-    return min(numbers[L:R]) + max(numbers[L:R])
+    return min(numbers[left:right]) + max(numbers[left:right])
 
 
 def get_input_file() -> Path:
@@ -187,7 +187,7 @@ def test_read_numbers():
     assert next(number_gen) == 35
     assert next(number_gen) == 20
 
-    for i in range(17):
+    for _ in range(17):
         assert next(number_gen, None) is not None
 
     assert next(number_gen) == 576
