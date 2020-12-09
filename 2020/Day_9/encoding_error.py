@@ -16,6 +16,18 @@ INPUT_FILE_PATH = Path(dirname(realpath(__file__))) / "input.txt.gz"
 
 
 def read_numbers(input_io: IO) -> Iterator[int]:
+    """
+    Iterate XMAS number sequence in stream.
+
+    Parameters
+    ----------
+    input_io: IO
+        program stream.
+
+    Return
+    ------
+    Iterator[int]    
+    """
     while line := input_io.readline():
         yield (int(line.strip()))
 
@@ -24,7 +36,10 @@ def task1(input_io: IO, preamble: int) -> int:
     """
     Solve task 1.
 
-    O(n) time and additional O(n) space.
+    Find number that can't be get as the sum of two distinct number
+    in a moving window of preamble size.
+
+    O(N * preamble) time and additional O(N) space.
 
     Parameters
     ----------
@@ -64,22 +79,46 @@ def task1(input_io: IO, preamble: int) -> int:
     return answer
 
 
-def task2(input_io: IO) -> int:
+def task2(input_io: IO, target_sum: int) -> int:
     """
     Solve task 2.
+
+    Finds in input_io stream a continguous set of at least two
+    number which sum to target_sum.
+
+    O(N) time and additional O(N) space.
 
     Parameters
     ----------
     input_io: IO
-        stream to all .
+        stream to XMAS numbers.
+
+    target_sum: int
+        number from task 1.
 
     Return
     ------
     int
-        .
+        min(sequence) + max(sequence) where sequence is a contiguous set
+        summing target_sum.
 
     """
-    pass
+    numbers = tuple(read_numbers(input_io))
+    prefix_sum = [0] * (len(numbers) + 1)
+    for i, number in enumerate(numbers):
+        prefix_sum[i+1] = number + prefix_sum[i]
+    L, R = 0, 1
+    found = False
+    while not found and R < len(prefix_sum):
+        if prefix_sum[R] - prefix_sum[L] == target_sum:
+            found = True
+        elif prefix_sum[R] - prefix_sum[L] < target_sum:
+            R += 1
+        else:
+            L += 1
+    if not found:
+        raise Exception("Not found!")
+    return min(numbers[L:R]) + max(numbers[L:R])
 
 
 def get_input_file() -> Path:
@@ -104,8 +143,8 @@ def main() -> None:
         print(f"Task 1: wrong number is {wrong_number}.")
 
     with gzip.open(input_file, "rt", encoding="ascii") as file:
-        questions_solved = task2(file)
-        print(f"Task 2: answer is {questions_solved}.")
+        weakness = task2(file, wrong_number)
+        print(f"Task 2: encryption weakness is {weakness}.")
 
 
 if __name__ == "__main__":
@@ -163,8 +202,8 @@ def test_task1_with_example_input():
 
 def test_task2_with_example_input():
     """Test task2 with problem statement example."""
-    questions_solved = task2(input_stream())
-    assert questions_solved == 6
+    weakness = task2(input_stream(), 127)
+    assert weakness == 62
 
 
 def test_task1_with_input_file():
@@ -177,5 +216,5 @@ def test_task1_with_input_file():
 def test_task2_with_input_file():
     """Test task2 with given input file (gziped)."""
     with gzip.open(INPUT_FILE_PATH, "rt", encoding="ascii") as file:
-        val = task2(file)
-        assert val == 777
+        weakness = task2(file, 32321523)
+        assert weakness == 4794981
