@@ -42,6 +42,7 @@ def task1(input_io: IO) -> int:
     Parameters
     ----------
     input_io: IO
+    Day10
         stream of adapters joltage.
 
     Return
