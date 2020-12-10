@@ -86,12 +86,9 @@ def task2(input_io: IO) -> int:
         Count number of ways using dynamic programming.
 
         Recurrence:
-        dp[i] = 0 if i >= n;
         dp[i] = 1 if i == n - 1;
-        dp[i] = sum_{j=i+1}^{n} dp[j] if numbers[j] - numbers[i] <= 3.
+        dp[i] = sum_{j=i+1}^{n-1} dp[j] if numbers[j] - numbers[i] <= 3 and 0 <= i < n-1.
         """
-        if pos >= len(numbers):
-            return 0
         if pos == len(numbers) - 1:
             return 1
         return sum(
