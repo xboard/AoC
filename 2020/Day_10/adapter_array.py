@@ -42,7 +42,8 @@ def task1(input_io: IO) -> int:
     Parameters
     ----------
     input_io: IO
-        stream to all .
+    Day10
+        stream of adapters joltage.
 
     Return
     ------
@@ -61,10 +62,13 @@ def task2(input_io: IO) -> int:
     """
     Solve task 2.
 
+    Uses dynamic programming to get O(n^2) worst case time complexity with
+    additional O(n) memory.
+
     Parameters
     ----------
     input_io: IO
-        stream to all .
+        stream of adapters joltage.
 
     Return
     ------
@@ -73,25 +77,32 @@ def task2(input_io: IO) -> int:
 
     """
     numbers = list(read_numbers(input_io))
+    numbers.append(0)
     numbers.sort()
 
     @lru_cache
-    def dp_solve(prev_number: int, pos: int) -> int:
+    def dp_solve(pos: int) -> int:
+        """
+        Count number of ways using dynamic programming.
+
+        Recurrence:
+        dp[i] = 0 if i >= n;
+        dp[i] = 1 if i == n - 1;
+        dp[i] = sum_{j=i+1}^{n} dp[j] if numbers[j] - numbers[i] <= 3.
+        """
         if pos >= len(numbers):
-            return 0
-        if numbers[pos] - prev_number > 3:
             return 0
         if pos == len(numbers) - 1:
             return 1
-        answer = (
-            dp_solve(numbers[pos], pos + 1)
-            + dp_solve(numbers[pos], pos + 2)
-            + dp_solve(numbers[pos], pos + 3)
+        return sum(
+            (
+                dp_solve(i)
+                for i in range(pos + 1, len(numbers))
+                if numbers[i] - numbers[pos] <= 3
+            )
         )
 
-        return answer
-
-    return dp_solve(0, 0) + dp_solve(0, 1) + dp_solve(0, 2)
+    return dp_solve(0)
 
 
 def get_input_file() -> Path:
