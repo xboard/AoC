@@ -36,14 +36,14 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Install and lint with black
+      - name: Install and run black
         if: ${{ always() }}
         run: |
               pip install --upgrade black
               echo ">>> Running black..."
               black --check .
 
-      - name: Install and lint with mypy
+      - name: Install and run mypy
         if: ${{ always() }}
         shell: bash
         run: |
@@ -52,7 +52,7 @@ jobs:
               echo ">>> Running mypy..."
               mypy **/*.py
 
-      - name: Install and lint with pylint
+      - name: Install and run pylint
         if: ${{ always() }}
         shell: bash
         run: |
@@ -61,7 +61,7 @@ jobs:
               echo ">>> Running pylint..."
               pylint **/*.py
       
-      - name: Install and lint with pydocsytle
+      - name: Install and run pydocsytle
         if: ${{ always() }}
         shell: bash
         run: |
@@ -69,7 +69,7 @@ jobs:
               echo ">>> Running pydocstyle..."
               pydocstyle .
       
-      - name: Install and lint with pycodesytle
+      - name: Install and run pycodesytle
         if: ${{ always() }}
         shell: bash
         run: |
