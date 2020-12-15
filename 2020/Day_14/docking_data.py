@@ -17,6 +17,7 @@ from collections import deque
 
 INPUT_FILE_PATH = Path(dirname(realpath(__file__))) / "input.txt.gz"
 
+
 @dataclass
 class MemOp:
     address: int
@@ -26,33 +27,32 @@ class MemOp:
 @dataclass
 class Initialization:
     off_positions: Set[int]
-    on_positions: Set[int] 
+    on_positions: Set[int]
     mem_ops: List[MemOp]
 
     def mask_value(self, value: int) -> int:
         masked_value = value
         for pos in self.on_positions:
-            masked_value |= (1 << pos)
+            masked_value |= 1 << pos
         for pos in self.off_positions:
             masked_value &= ~(1 << pos)
-        return masked_value    
-
+        return masked_value
 
     def mask_address(self, addr: int) -> str:
         masked_addr = f"{addr:b}"[::-1]
         masked_addr += "0" * (36 - len(masked_addr))
         for pos in range(36):
             if pos not in self.on_positions and pos not in self.off_positions:
-                masked_addr = masked_addr[:pos] + "X" + masked_addr[pos+1:]
+                masked_addr = masked_addr[:pos] + "X" + masked_addr[pos + 1 :]
             elif pos in self.on_positions:
-                masked_addr = masked_addr[:pos] + "1" + masked_addr[pos+1:]
+                masked_addr = masked_addr[:pos] + "1" + masked_addr[pos + 1 :]
         return masked_addr[::-1]
 
 
 def read_initialization(input_io: IO) -> Iterator[Initialization]:
     def parse_mask(line: str):
         sections = line.split()
-        answer = [set(),set()]
+        answer = [set(), set()]
         for pos, bit in enumerate(reversed(sections[2])):
             if bit != "X":
                 answer[int(bit)].add(pos)
@@ -78,7 +78,7 @@ def read_initialization(input_io: IO) -> Iterator[Initialization]:
 def apply_maks(value: int, on_pos: List[int], off_pos: List[int]) -> int:
     masked_value = value
     for pos in on_pos:
-        masked_value |= (1 << pos)
+        masked_value |= 1 << pos
     for pos in off_pos:
         masked_value &= ~(1 << pos)
     return masked_value
@@ -93,8 +93,8 @@ def addresses_list(addr: str) -> List[int]:
         updated = False
         for pos in range(len(addr)):
             if addr[pos] == "X":
-                new_addr0 = addr[:pos]+"0"+addr[pos+1:]
-                new_addr1 = addr[:pos]+"1"+addr[pos+1:]
+                new_addr0 = addr[:pos] + "0" + addr[pos + 1 :]
+                new_addr1 = addr[:pos] + "1" + addr[pos + 1 :]
                 to_gen.append(new_addr0)
                 to_gen.append(new_addr1)
                 updated = True
@@ -121,13 +121,12 @@ def task1(input_io: IO) -> int:
 
     """
     mem_value_map: Dict[int, int] = dict()
-    
+
     for i12n in read_initialization(input_io):
         for mem_op in i12n.mem_ops:
             mem_value_map[mem_op.address] = i12n.mask_value(mem_op.unmasked_value)
-    
-    return sum(mem_value_map.values())
 
+    return sum(mem_value_map.values())
 
 
 def task2(input_io: IO) -> int:
@@ -146,13 +145,13 @@ def task2(input_io: IO) -> int:
 
     """
     mem_value_map: Dict[int, int] = dict()
-    
+
     for i12n in read_initialization(input_io):
         for mem_op in i12n.mem_ops:
             masked_address = i12n.mask_address(mem_op.address)
             for addr in addresses_list(masked_address):
                 mem_value_map[addr] = mem_op.unmasked_value
-    
+
     return sum(mem_value_map.values())
 
 
@@ -209,6 +208,7 @@ mask = 00000000000000000000000000000000X0XX
 mem[26] = 1"""
     )
 
+
 def test_read_initialization():
     """Test read_initialization function."""
     i12n: Initialization = next(read_initialization(input_stream()))
@@ -226,7 +226,7 @@ def test_read_initialization():
 def test_mask_address():
     it = read_initialization(input_stream2())
     i12n: Initialization = next(it)
-    assert i12n.on_positions == {1,4}
+    assert i12n.on_positions == {1, 4}
     assert len(i12n.off_positions) == 32
     assert i12n.mask_address(42) == "000000000000000000000000000000X1101X"
 
@@ -234,6 +234,7 @@ def test_mask_address():
     assert i12n.on_positions == set()
     assert len(i12n.off_positions) == 33
     assert i12n.mask_address(26) == "00000000000000000000000000000001X0XX"
+
 
 def test_task1_with_example_input():
     """Test task1 with problem statement example."""
@@ -259,8 +260,3 @@ def test_task2_with_input_file():
     with gzip.open(INPUT_FILE_PATH, "rt", encoding="ascii") as file:
         answer = task2(file)
         assert answer == 3608464522781
-
-
-
-
-
