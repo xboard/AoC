@@ -9,10 +9,11 @@ import argparse
 import gzip
 from os.path import dirname, realpath
 from io import StringIO
-from typing import Sequence, List, Dict, IO, Iterator, NewType, cast
+from typing import Sequence, List, Set, Dict, IO, Iterator, NewType, cast
 from pathlib import Path
 from dataclasses import dataclass
 from re import findall
+from collections import deque
 
 INPUT_FILE_PATH = Path(dirname(realpath(__file__))) / "input.txt.gz"
 
@@ -24,11 +25,11 @@ class MemOp:
 
 @dataclass
 class Initialization:
-    off_positions: List[int]
-    on_positions: List[int] 
+    off_positions: Set[int]
+    on_positions: Set[int] 
     mem_ops: List[MemOp]
 
-    def apply_masks(self, value: int) -> int:
+    def mask_value(self, value: int) -> int:
         masked_value = value
         for pos in self.on_positions:
             masked_value |= (1 << pos)
@@ -37,13 +38,24 @@ class Initialization:
         return masked_value    
 
 
+    def mask_address(self, addr: int) -> str:
+        masked_addr = f"{addr:b}"[::-1]
+        masked_addr += "0" * (36 - len(masked_addr))
+        for pos in range(36):
+            if pos not in self.on_positions and pos not in self.off_positions:
+                masked_addr = masked_addr[:pos] + "X" + masked_addr[pos+1:]
+            elif pos in self.on_positions:
+                masked_addr = masked_addr[:pos] + "1" + masked_addr[pos+1:]
+        return masked_addr[::-1]
+
+
 def read_initialization(input_io: IO) -> Iterator[Initialization]:
     def parse_mask(line: str):
         sections = line.split()
-        answer = [[],[]]
+        answer = [set(),set()]
         for pos, bit in enumerate(reversed(sections[2])):
             if bit != "X":
-                answer[int(bit)].append(pos)
+                answer[int(bit)].add(pos)
         return tuple(answer)
 
     def parse_mem(line: str):
@@ -71,6 +83,28 @@ def apply_maks(value: int, on_pos: List[int], off_pos: List[int]) -> int:
         masked_value &= ~(1 << pos)
     return masked_value
 
+
+def addresses_list(addr: str) -> List[int]:
+    updated = True
+    addresses = []
+    to_gen = deque([addr])
+    while to_gen:
+        addr = to_gen.popleft()
+        updated = False
+        for pos in range(len(addr)):
+            if addr[pos] == "X":
+                new_addr0 = addr[:pos]+"0"+addr[pos+1:]
+                new_addr1 = addr[:pos]+"1"+addr[pos+1:]
+                to_gen.append(new_addr0)
+                to_gen.append(new_addr1)
+                updated = True
+                break
+        if not updated:
+            addresses.append(addr)
+
+    return [int(address, 2) for address in addresses]
+
+
 def task1(input_io: IO) -> int:
     """
     Solve task 1.
@@ -87,9 +121,10 @@ def task1(input_io: IO) -> int:
 
     """
     mem_value_map: Dict[int, int] = dict()
+    
     for i12n in read_initialization(input_io):
         for mem_op in i12n.mem_ops:
-            mem_value_map[mem_op.address] = i12n.apply_masks(mem_op.unmasked_value)
+            mem_value_map[mem_op.address] = i12n.mask_value(mem_op.unmasked_value)
     
     return sum(mem_value_map.values())
 
@@ -110,7 +145,15 @@ def task2(input_io: IO) -> int:
         .
 
     """
-    pass
+    mem_value_map: Dict[int, int] = dict()
+    
+    for i12n in read_initialization(input_io):
+        for mem_op in i12n.mem_ops:
+            masked_address = i12n.mask_address(mem_op.address)
+            for addr in addresses_list(masked_address):
+                mem_value_map[addr] = mem_op.unmasked_value
+    
+    return sum(mem_value_map.values())
 
 
 def get_input_file() -> Path:
@@ -136,7 +179,7 @@ def main() -> None:
 
     with gzip.open(input_file, "rt", encoding="ascii") as file:
         answer = task2(file)
-        print(f"Task 2: answer is {answer}.")
+        print(f"Task 2: the sum of all values left in memory is {answer}.")
 
 
 if __name__ == "__main__":
@@ -157,19 +200,40 @@ mem[8] = 0"""
     )
 
 
+def input_stream2() -> IO:
+    """Input stream fixture."""
+    return StringIO(
+        """mask = 000000000000000000000000000000X1001X
+mem[42] = 100
+mask = 00000000000000000000000000000000X0XX
+mem[26] = 1"""
+    )
+
 def test_read_initialization():
     """Test read_initialization function."""
     i12n: Initialization = next(read_initialization(input_stream()))
-    assert i12n.on_positions == [6]
-    assert i12n.off_positions == [1]
+    assert i12n.on_positions == {6}
+    assert i12n.off_positions == {1}
     assert len(i12n.mem_ops) == 3
     assert i12n.mem_ops[0] == MemOp(8, 11)
     assert i12n.mem_ops[1] == MemOp(7, 101)
     assert i12n.mem_ops[2] == MemOp(8, 0)
-    assert i12n.apply_masks(11) == 73
-    assert i12n.apply_masks(101) == 101
-    assert i12n.apply_masks(0) == 64 
+    assert i12n.mask_value(11) == 73
+    assert i12n.mask_value(101) == 101
+    assert i12n.mask_value(0) == 64
 
+
+def test_mask_address():
+    it = read_initialization(input_stream2())
+    i12n: Initialization = next(it)
+    assert i12n.on_positions == {1,4}
+    assert len(i12n.off_positions) == 32
+    assert i12n.mask_address(42) == "000000000000000000000000000000X1101X"
+
+    i12n: Initialization = next(it)
+    assert i12n.on_positions == set()
+    assert len(i12n.off_positions) == 33
+    assert i12n.mask_address(26) == "00000000000000000000000000000001X0XX"
 
 def test_task1_with_example_input():
     """Test task1 with problem statement example."""
@@ -177,10 +241,10 @@ def test_task1_with_example_input():
     assert answer == 165
 
 
-# def test_task2_with_example_input():
-#     """Test task2 with problem statement example."""
-#     questions_solved = task2(input_stream())
-#     assert questions_solved == 6
+def test_task2_with_example_input():
+    """Test task2 with problem statement example."""
+    answer = task2(input_stream2())
+    assert answer == 208
 
 
 def test_task1_with_input_file():
@@ -190,26 +254,13 @@ def test_task1_with_input_file():
         assert answer == 12610010960049
 
 
-# def test_task2_with_input_file():
-#     """Test task2 with given input file (gziped)."""
-#     with gzip.open(INPUT_FILE_PATH, "rt", encoding="ascii") as file:
-#         val = task2(file)
-#         assert val == 777
+def test_task2_with_input_file():
+    """Test task2 with given input file (gziped)."""
+    with gzip.open(INPUT_FILE_PATH, "rt", encoding="ascii") as file:
+        answer = task2(file)
+        assert answer == 3608464522781
 
 
 
-def mask_fn(mask: str):
-    def get_masked_value(value:int)->int:
-        newvalue = 0
-        for i, bit in enumerate(reversed(mask)):
-            vbit = value & (2**i)
-            if bit == "X":
-                newvalue += vbit
-            elif bit == "1":
-                newvalue += 2**i
-            elif bit == "0":
-                pass
-            else:
-                assert False
-        return newvalue
-    return get_masked_value
+
+
