@@ -9,7 +9,7 @@ import argparse
 import gzip
 from os.path import dirname, realpath
 from io import StringIO
-from typing import Sequence, List, Set, Dict, IO, Iterator, NewType, cast
+from typing import List, Tuple, Set, Dict, IO, Iterator, cast
 from pathlib import Path
 from dataclasses import dataclass
 from re import findall
@@ -20,17 +20,26 @@ INPUT_FILE_PATH = Path(dirname(realpath(__file__))) / "input.txt.gz"
 
 @dataclass
 class MemOp:
+    """
+    Memory operation.
+
+    mem[address] = unmasked_value
+    """
+
     address: int
     unmasked_value: int
 
 
 @dataclass
 class Initialization:
+    """Represent a boot initialization."""
+
     off_positions: Set[int]
     on_positions: Set[int]
     mem_ops: List[MemOp]
 
     def mask_value(self, value: int) -> int:
+        """Mask a memory value - Task 1."""
         masked_value = value
         for pos in self.on_positions:
             masked_value |= 1 << pos
@@ -39,29 +48,33 @@ class Initialization:
         return masked_value
 
     def mask_address(self, addr: int) -> str:
+        """Mask a memory address - Task 2."""
         masked_addr = f"{addr:b}"[::-1]
         masked_addr += "0" * (36 - len(masked_addr))
         for pos in range(36):
+            inc_pos = pos + 1
             if pos not in self.on_positions and pos not in self.off_positions:
-                masked_addr = masked_addr[:pos] + "X" + masked_addr[pos + 1 :]
+                masked_addr = masked_addr[:pos] + "X" + masked_addr[inc_pos:]
             elif pos in self.on_positions:
-                masked_addr = masked_addr[:pos] + "1" + masked_addr[pos + 1 :]
+                masked_addr = masked_addr[:pos] + "1" + masked_addr[inc_pos:]
         return masked_addr[::-1]
 
 
 def read_initialization(input_io: IO) -> Iterator[Initialization]:
-    def parse_mask(line: str):
+    """Read initialization stream."""
+
+    def parse_mask(line: str) -> Tuple[Set[int], Set[int]]:
         sections = line.split()
-        answer = [set(), set()]
+        answer: List[Set[int]] = [set(), set()]
         for pos, bit in enumerate(reversed(sections[2])):
             if bit != "X":
                 answer[int(bit)].add(pos)
-        return tuple(answer)
+        return cast("Tuple[Set[int], Set[int]]", tuple(answer))
 
     def parse_mem(line: str):
         address = int(findall(r"\[(\d+)\]", line)[0])
-        uv = int(findall(r"\d+$", line)[0])
-        return MemOp(address, uv)
+        unmasked_value = int(findall(r"\d+$", line)[0])
+        return MemOp(address, unmasked_value)
 
     line = input_io.readline().strip()
     initialization = Initialization(*parse_mask(line), list())
@@ -75,26 +88,19 @@ def read_initialization(input_io: IO) -> Iterator[Initialization]:
     yield initialization
 
 
-def apply_maks(value: int, on_pos: List[int], off_pos: List[int]) -> int:
-    masked_value = value
-    for pos in on_pos:
-        masked_value |= 1 << pos
-    for pos in off_pos:
-        masked_value &= ~(1 << pos)
-    return masked_value
-
-
 def addresses_list(addr: str) -> List[int]:
+    """Return list of address from a masked address."""
     updated = True
     addresses = []
     to_gen = deque([addr])
     while to_gen:
         addr = to_gen.popleft()
         updated = False
-        for pos in range(len(addr)):
+        for pos, _ in enumerate(addr):
+            inc_pos = pos + 1
             if addr[pos] == "X":
-                new_addr0 = addr[:pos] + "0" + addr[pos + 1 :]
-                new_addr1 = addr[:pos] + "1" + addr[pos + 1 :]
+                new_addr0 = addr[:pos] + "0" + addr[inc_pos:]
+                new_addr1 = addr[:pos] + "1" + addr[inc_pos:]
                 to_gen.append(new_addr0)
                 to_gen.append(new_addr1)
                 updated = True
@@ -112,19 +118,20 @@ def task1(input_io: IO) -> int:
     Parameters
     ----------
     input_io: IO
-        stream to all .
+        stream to initializations.
 
     Return
     ------
     int
-        .
+        sum of initialized memory values.
 
     """
     mem_value_map: Dict[int, int] = dict()
 
     for i12n in read_initialization(input_io):
         for mem_op in i12n.mem_ops:
-            mem_value_map[mem_op.address] = i12n.mask_value(mem_op.unmasked_value)
+            masked_value = i12n.mask_value(mem_op.unmasked_value)
+            mem_value_map[mem_op.address] = masked_value
 
     return sum(mem_value_map.values())
 
@@ -136,12 +143,12 @@ def task2(input_io: IO) -> int:
     Parameters
     ----------
     input_io: IO
-        stream to all .
+        stream to initializations.
 
     Return
     ------
     int
-        .
+        sum of initialized memory values..
 
     """
     mem_value_map: Dict[int, int] = dict()
@@ -224,13 +231,14 @@ def test_read_initialization():
 
 
 def test_mask_address():
-    it = read_initialization(input_stream2())
-    i12n: Initialization = next(it)
+    """Test mask_address function."""
+    init = read_initialization(input_stream2())
+    i12n: Initialization = next(init)
     assert i12n.on_positions == {1, 4}
     assert len(i12n.off_positions) == 32
     assert i12n.mask_address(42) == "000000000000000000000000000000X1101X"
 
-    i12n: Initialization = next(it)
+    i12n: Initialization = next(init)
     assert i12n.on_positions == set()
     assert len(i12n.off_positions) == 33
     assert i12n.mask_address(26) == "00000000000000000000000000000001X0XX"
