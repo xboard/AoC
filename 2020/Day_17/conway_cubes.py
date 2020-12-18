@@ -9,7 +9,7 @@ import argparse
 import gzip
 from os.path import dirname, realpath
 from io import StringIO
-from typing import Tuple, IO, Set
+from typing import Tuple, IO, Set, Iterator
 from pathlib import Path
 from enum import Enum, auto
 
@@ -28,7 +28,7 @@ class Task(Enum):
 
 def read_initial_state(input_io: IO) -> State:
     """
-    Read initial state
+    Read initial state.
 
     Parameters
     ----------
@@ -50,8 +50,8 @@ def read_initial_state(input_io: IO) -> State:
     return actives
 
 
-def dim_iterator(task: Task) -> Dimension:
-    """Iterates of variable dimensions"""
+def deltas(task: Task) -> Iterator[Dimension]:
+    """Iterate neighbours dimension deltas."""
     for dx in [-1, 0, 1]:
         for dy in [-1, 0, 1]:
             for dz in [-1, 0, 1]:
@@ -59,7 +59,7 @@ def dim_iterator(task: Task) -> Dimension:
                     for dw in [-1, 0, 1]:
                         yield (dx, dy, dz, dw)
                 else:
-                        yield (dx, dy, dz, 0)
+                    yield (dx, dy, dz, 0)
 
 
 def solve(input_io: IO, task: Task) -> int:
@@ -81,27 +81,17 @@ def solve(input_io: IO, task: Task) -> int:
     for _ in range(6):
         candidates: State = set()
         for x, y, z, w in state:
-            for dx in [-1, 0, 1]:
-                for dy in [-1, 0, 1]:
-                    for dz in [-1, 0, 1]:
-                        if task == Task.Task2:
-                            for dw in [-1, 0, 1]:
-                                candidates.add((x + dx, y + dy, z + dz, w + dw))
-                        else:
-                            candidates.add((x + dx, y + dy, z + dz, 0))
+            for dx, dy, dz, dw in deltas(task):
+                candidates.add((x + dx, y + dy, z + dz, w + dw))
 
         actives: State = set()
         for x, y, z, w in candidates:
             num_actives = 0
-            for dx in [-1, 0, 1]:
-                for dy in [-1, 0, 1]:
-                    for dz in [-1, 0, 1]:
-                        for dw in [-1, 0, 1]:
-                            if dx == dy == dz == dw == 0:
-                                continue
-                            if (x + dx, y + dy, z + dz, w + dw) in state:
-                                num_actives += 1
-
+            for dx, dy, dz, dw in deltas(task):
+                if dx == dy == dz == dw == 0:
+                    continue
+                if (x + dx, y + dy, z + dz, w + dw) in state:
+                    num_actives += 1
             if (x, y, z, w) in state and num_actives in [2, 3]:
                 actives.add((x, y, z, w))
             if (x, y, z, w) not in state and num_actives == 3:
@@ -163,14 +153,15 @@ def test_read_cubes():
     assert (1, 1, 0, 0) not in state
     assert (2, 1, 0, 0) in state
 
-def test_dim_iterator():
-    """ Test dim_iterator function """
-    iter = tuple(dim_iterator(Task.Task1))
-    assert len(iter) == 27
-    assert iter[0] == (-1, -1, -1, 0)
-    iter = tuple(dim_iterator(Task.Task2))
-    assert len(iter) == 81
-    assert iter[0] == (-1, -1, -1, -1)
+
+def test_delta():
+    """Test delta generator."""
+    diter = tuple(deltas(Task.Task1))
+    assert len(diter) == 27
+    assert diter[0] == (-1, -1, -1, 0)
+    diter = tuple(deltas(Task.Task2))
+    assert len(diter) == 81
+    assert diter[0] == (-1, -1, -1, -1)
 
 
 def test_task1_with_example_input():
